@@ -1,6 +1,6 @@
 // Seth Ciancio 11/8/23
 // Assembler
-// Input File: "CiancioTest.asm".
+// Input File: "testASM/CiancioTest11.asm".
 // A program to simulate the operation of an x86 CPU.
 
 //need to create the functions run the array notation. 
@@ -12,14 +12,14 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-#define MAX 150			// strlen of simulators memory can be changed
+#define MAX 150			// strlen of simulator's memory can be changed
 #define COL 7			// number of columns for output
 #define LINE_SIZE 40	// For c-strings
 #define varLength 3		// Max length of variables. Includes string stopper
 
 typedef short int Memory;		// Sets the type of memory to short int 
 
-char ASM_FILE_NAME[LINE_SIZE] = "CiancioTest9.asm";		// Default parameter. Can be changed in settings
+char ASM_FILE_NAME[LINE_SIZE] = "testASM/CiancioTest11.asm";		// Default parameter. Can be changed in settings
 char preferencesFile[LINE_SIZE] = "preferences.txt";
 
 	//OPERAND TYPES, REGISTERS AND OTHER
@@ -34,7 +34,7 @@ char preferencesFile[LINE_SIZE] = "preferences.txt";
 #define CONSTANT 7
 
 	//commands
-#define numInstructions 21	// the number of supported instructions (includes newline & comment)
+#define numInstructions 21	// The number of supported instructions (includes newline & comment)
 #define HALT 5
 #define MOVREG 192
 #define MOVMEM 224
@@ -62,6 +62,7 @@ const char instructionTable[numInstructions][LINE_SIZE] = { "mov [\0","mov\0","a
 				  "ret\0","halt\0","jmp\0","jne\0","jbe\0","jae\0","ja\0","jb\0","je\0","fun\0","\n\0",";\0" };
 
 	// This is the lookup table for all the instructions, matched with the instructionTable.
+	// The "Control word" is a 6-bit binary number that tells the compiler how to compile each command. Allows for adding commands without modifying compiler code.
 	// Two parameter commands go first, then single param, then jmps, then functions, then the non-instruction ones.
 const Memory controlWordKey[numInstructions][2] = {
 	{MOVMEM, 42},		// 101010 - Inline params,	initCommandBW,	paramDecodeBW
@@ -101,7 +102,7 @@ const Memory controlWordKey[numInstructions][2] = {
 #define COMPILE_OVERRUN 2
 #define OVERRUN 1
 
-	// Errors to assist in debugging ASM programs. They don't actually halt execution.
+	// Errors to assist in debugging ASM programs. They don't actually halt execution, "fatal" just means very bad.
 const char errorMessages[9][LINE_SIZE] = { "No errors reported!","FATAL; INSTRUCTION = ZERO", "COMPILE UNKNOWN", 
 		 "FATAL; CANNOT STORE DATA IN CONSTANT","FATAL; UNKNOWN INSTRUCTION","FATAL; COMPILE OVERRUN",
 		 "COMPILER: UNKNOWN PARAMETER","UNKNOWN VARIABLE","TOO MANY 3-BIT PARAMETERS"};
@@ -122,7 +123,7 @@ struct Registers
 Memory memory[MAX] = { 0 };		// Global variable the memory of the virtual machine
 Memory address;					// Global variable the current address in the virtual machin
 Memory stackPointer;			// Global variable the current address of the stack pointer
-int internalError = FALSE;		// For detecting when we go past halt.
+int internalError = FALSE;		// For detecting program anomalies (see errorMessages above)
 bool debug = false;				// For debugging
 int dumpType = 0;				// 0 - Readable, 1 - Decimal, 2 - Hex
 int latestOutput = -1;			// Stores the most recent output (for easier debuging)
@@ -133,16 +134,17 @@ int latestOutput = -1;			// Stores the most recent output (for easier debuging)
 void runMachineCode( );
 
 	//ConvertToMachineCode: Converts a single line of ASM to machine code
-		// INPUT: FILE *fin - the .asm file.
+		// INPUT: char line[ ] - a line of ASM to convert
 void convertToMachineCode(char line[ ]);
 
 	// assembler: Converts the entire ASM file and stores it in memory
 void assembler( );
 
-	// labelsAssembler: Converts an entire ASM file with (or without) labels, and puts it in memory.
+	// labelConvert: Converts varLength long labels in the ASM file to actual memory locations, fills fileBuffer with converted ASM file, returns fileBuffer length
 int labelConvert(FILE* labeled, char fileBuffer[MAX][LINE_SIZE]);
 
-	//printMemoryDump: Prints memeory with commands represented as integes
+	//printMemoryDump: Prints the memory of the simulated computer.
+	// dumpType: 0 = Readable, 1 = Hex, 2 = Decimal
 void printMemoryDump(int dumpType);
 
 	//printMemoryDumpReadable: Prints memory with instruction names & labels for values.
@@ -1358,34 +1360,28 @@ Memory getType(char* param)
 	// Removes comments & oversized lines from the input file & fills "line" with clean ASM. Returns true until file is empty.
 bool getLineWithoutTrash(FILE *inputFile,char line[LINE_SIZE])
 {
-	
-		// If we're at the end of the file
+
 	if (feof(inputFile))
 	{
-		return false;	// Return false, no line to supply
+		return false;	// No line, return false
 	}
-
+	
 	fgets(line, LINE_SIZE, inputFile);
 	
-	// If the line is good (ends with EOF or newline and is not a comment)
+	// If the line is not trash (oversized line / comment)
 	if ((feof(inputFile) || line[strlen(line) - 1] == '\n') && line[0] != ';')
 	{
 		return true;				// Return true, line is good
 	}
-	else {							// Otherwise get another line
-		return getLineWithoutTrash(inputFile, line);
-	}/*
-	if (line[strlen(line) - 1] == '\n')	
+
+	// If it's an oversized line (trash), we need to fgets() our way through it one LINE_SIZE at a time.
+	while (line[strlen(line) - 1] != '\n')
 	{
-		if (line[0] == ';')		// If it's a comment
-		{
-			return getLineWithoutTrash(inputFile, line);	// Get another line
-		}
-		else					// If it's not
-		{
-			return true;		// Return true, line is good
-		}
-	}*/
+		fgets(line, LINE_SIZE, inputFile);
+	}
+	
+	// Hopefully the next line won't be trash!
+	return getLineWithoutTrash(inputFile, line);
 }
 
 /*

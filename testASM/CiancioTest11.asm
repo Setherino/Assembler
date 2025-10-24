@@ -1,4 +1,4 @@
-; Program to take values and then print them backwards
+; Program to take values and then print them backwards (testing recursive functions)
 ; Get the number of values to enter.
 get
 ; Check size (for memory safety!)
