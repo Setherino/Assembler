@@ -19,7 +19,7 @@
 
 typedef short int Memory;		// Sets the type of memory to short int 
 
-char ASM_FILE_NAME[LINE_SIZE] = "testASM/CiancioTest11.asm";		// Default parameter. Can be changed in settings
+char ASM_FILE_NAME[LINE_SIZE] = "CiancioTest9.asm";		// Default parameter. Can be changed in settings
 char preferencesFile[LINE_SIZE] = "preferences.txt";
 
 	//OPERAND TYPES, REGISTERS AND OTHER
