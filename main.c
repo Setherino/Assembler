@@ -1,7 +1,6 @@
-// Seth Ciancio 11/8/23
-// Assembler
-// Input File: "testASM/CiancioTest11.asm".
-// A program to simulate the operation of an x86 CPU.
+// Seth Ciancio 10/24/25
+// Assembler: Web-Assembly
+// A program to simulate the operation of an x86 CPU, designed to run on the web!
 
 //need to create the functions run the array notation. 
 #define _CRT_SECURE_NO_WARNINGS  // lets us use depricated code
@@ -1472,4 +1471,9 @@ function would just keep looking for endlines over and over again. Fixed that, a
 This one is fun: I wasn't initializing the param1 & param2 variables. This was fine with most ASM programs, which open with some sort of mov
 instruction. But my linked list program opens with a get, so it crashed when it tried to do a getType() on an uninitialized variable. So
 I just initialize them to whatever and that works fine.
+*/
+
+/*
+Problem log 2.0, Web-Assembly
+10/24/25 - f_open is windows specific, we'll need to do some restructuring to make our filesystem work on the web. For now, I'll do it the easy way.
 */
