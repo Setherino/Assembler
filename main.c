@@ -1,6 +1,6 @@
 // Seth Ciancio 10/24/25
 // Assembler: Web-Assembly
-// A program to simulate the operation of an x86 CPU, designed to run on the web!
+// A program to simulate the operation of an x86 CPU, modified to run on the web!
 
 //need to create the functions run the array notation. 
 #define _CRT_SECURE_NO_WARNINGS  // lets us use depricated code
@@ -10,11 +10,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include "files.h"		// Actually quite important!
 
 #define MAX 150			// strlen of simulator's memory can be changed
 #define COL 7			// number of columns for output
-#define LINE_SIZE 40	// For c-strings
 #define varLength 3		// Max length of variables. Includes string stopper
+//#define LINE_SIZE 40	// For c-strings [MOVED TO files.h]
 
 typedef short int Memory;		// Sets the type of memory to short int 
 
@@ -140,7 +141,7 @@ void convertToMachineCode(char line[ ]);
 void assembler( );
 
 	// labelConvert: Converts varLength long labels in the ASM file to actual memory locations, fills fileBuffer with converted ASM file, returns fileBuffer length
-int labelConvert(FILE* labeled, char fileBuffer[MAX][LINE_SIZE]);
+int labelConvert(sfile* labeled, char fileBuffer[MAX][LINE_SIZE]);
 
 	//printMemoryDump: Prints the memory of the simulated computer.
 	// dumpType: 0 = Readable, 1 = Hex, 2 = Decimal
@@ -195,7 +196,7 @@ void pushStack(Memory value);
 void fillFun(char line[]);
 
 	//getLineWithoutTrash: gets one line of ASM, and removes the trash if it needs to.
-bool getLineWithoutTrash(FILE *inputFile, char line[]);
+bool getLineWithoutTrash(sfile *inputFile, char line[]);
 
 //splitCommand: breaks one line of ASM into its constituent parts.
 	// INPUT: line[] - one line of asm; 
@@ -347,10 +348,10 @@ bool customSettings()
 
 bool loadPreferences()
 {
-	FILE* fin;
+	sfile* fin;
 	bool printMemoryAtEnd = false;
 
-	fopen_s(&fin, preferencesFile, "r");
+	sopen(&fin, preferencesFile, "r");
 	if (fin == NULL)
 	{
 		printf("\tNo %s file found. Using default preferences.\n\n", preferencesFile);
@@ -360,15 +361,15 @@ bool loadPreferences()
 	else
 	{
 		char temp[LINE_SIZE];
-		fgets(ASM_FILE_NAME, LINE_SIZE, fin);
+		sgets(ASM_FILE_NAME, LINE_SIZE, fin);
 		int index = 0;
 		getFromLine(ASM_FILE_NAME, ASM_FILE_NAME, ' ', ' ', &index);
-		fgets(temp, LINE_SIZE, fin);
+		sgets(temp, LINE_SIZE, fin);
 		debug = atoi(temp) & 1;
 		printMemoryAtEnd = atoi(temp) & 2;
-		fgets(temp, LINE_SIZE, fin);
+		sgets(temp, LINE_SIZE, fin);
 		dumpType = atoi(temp);
-		fclose(fin);
+		sclose(fin);
 		printf("Loaded preferences from file.\n\n");
 	}
 
@@ -378,9 +379,9 @@ bool loadPreferences()
 void removeLabelsFromFile(char fileName[LINE_SIZE])
 {
 	char fileBuffer[MAX][LINE_SIZE];
-	FILE* fin;
-	FILE* fout;
-	fopen_s(&fin, ASM_FILE_NAME, "r");
+	sfile* fin;
+	sfile* fout;
+	sopen(&fin, ASM_FILE_NAME, "r");
 	if (fin == NULL)
 	{
 		printf("Error, file didn't open\n\nExiting program...\n\n");
@@ -389,9 +390,9 @@ void removeLabelsFromFile(char fileName[LINE_SIZE])
 	}
 
 	int fileSize = labelConvert(fin, fileBuffer);
-	fclose(fin);
+	sclose(fin);
 
-	fopen_s(&fout, fileName, "w");
+	sopen(&fout, fileName, "w");
 	if (fin == NULL)
 	{
 		printf("Error, file didn't open\n\nExiting program...\n\n");
@@ -405,21 +406,21 @@ void removeLabelsFromFile(char fileName[LINE_SIZE])
 		strcpy(stringBuffer, fileBuffer[i]);
 		if (stringBuffer[0] != '\n')
 		{
-			fprintf(fout, "%s\n", stringBuffer);
+			sfprintf(fout, "%s\n", stringBuffer);
 		}
 		else
 		{
-			fprintf(fout, "%s", stringBuffer);
+			sfprintf(fout, "%s", stringBuffer);
 		}
 	}
-	fclose(fout);
+	sclose(fout);
 
 	printf("\n\n\tLabels removed & new file saved.\n\n");
 }
 
 bool optionsMenu(bool printMemoryAtEnd)
 {
-	FILE* fout;
+	sfile* fout;
 	
 	char debugModeNames[3][LINE_SIZE] = { "Readable","Decimal","Hexidecimal" };
 	char traceMode[2][LINE_SIZE] = { "Disabled","Enabled" };
@@ -462,11 +463,11 @@ bool optionsMenu(bool printMemoryAtEnd)
 		removeLabelsFromFile(unlabeledFilename);
 		return optionsMenu(printMemoryAtEnd);
 	case '5':								// Save settings
-		fopen_s(&fout, preferencesFile, "w");
-		fprintf(fout,"%s\n", ASM_FILE_NAME);
-		fprintf(fout, "%d%d\n", printMemoryAtEnd, debug);
-		fprintf(fout, "%d\n", dumpType);
-		fclose(fout);
+		sopen(&fout, preferencesFile, "w");
+		sfprintf(fout,"%s\n", ASM_FILE_NAME);
+		sfprintf(fout, "%d%d\n", printMemoryAtEnd, debug);
+		sfprintf(fout, "%d\n", dumpType);
+		sclose(fout);
 		printf("\n\n\tSettings saved!\n\n");
 		return optionsMenu(printMemoryAtEnd);
 	case '6':
@@ -488,9 +489,9 @@ bool optionsMenu(bool printMemoryAtEnd)
 void assembler( )
 {
 	address = 0;
-	FILE *fin;			  // File pointer for reading in the assembly code.
+	sfile *fin;			  // File pointer for reading in the assembly code.
 
-	fopen_s( &fin, ASM_FILE_NAME, "r" );
+	sopen(&fin, ASM_FILE_NAME, "r" );
 	if ( fin == NULL )
 	{
 		printf( "Error, file didn't open\n\nExiting program...\n\n" );
@@ -524,7 +525,7 @@ void assembler( )
 	}
 }
 
-int labelConvert(FILE* labeled, char fileBuffer[MAX][LINE_SIZE])
+int labelConvert(sfile* labeled, char fileBuffer[MAX][LINE_SIZE])
 {
 	int fileSize = 0;
 	char labels[MAX][LINE_SIZE];	// Stores all the names of the labels
@@ -566,7 +567,7 @@ int labelConvert(FILE* labeled, char fileBuffer[MAX][LINE_SIZE])
 			}
 		}
 	}
-	fclose(labeled);
+	sclose(labeled);
 	
 
 		// Second pass - replace labels inside [parameters] with the right addresses
@@ -1207,9 +1208,9 @@ void getInstructionName(Memory location, char name[], Memory displayType[])
 
 	//Get command info.
 	Memory command = memory[location];		// Pull byte from memory
-	Memory instruction = command & 224;		// 11100000
-	Memory param1 = (command & 24) >> 3;	// 00011000
-	Memory param2 = command & 7;			// 00000111
+	Memory instruction = command & 224;		// 11100000 For instructions with inline parameters, the first 3 bytes store which command it is
+	Memory param1 = (command & 24) >> 3;	// 00011000 The next two store the first parameter
+	Memory param2 = command & 7;			// 00000111 The last three store the second parameter
 	
 		// We need special cases for variables addressed by BXADR, because we can only know where they are at the moment
 		// The program uses them. So... if the program's current instruction is using BXADR outside of a function...
@@ -1357,26 +1358,26 @@ Memory getType(char* param)
 	}
 }
 	// Removes comments & oversized lines from the input file & fills "line" with clean ASM. Returns true until file is empty.
-bool getLineWithoutTrash(FILE *inputFile,char line[LINE_SIZE])
+bool getLineWithoutTrash(sfile* inputFile,char line[LINE_SIZE])
 {
 
-	if (feof(inputFile))
+	if (seof(inputFile))
 	{
 		return false;	// No line, return false
 	}
 	
-	fgets(line, LINE_SIZE, inputFile);
+	sgets(line, LINE_SIZE, inputFile);
 	
 	// If the line is not trash (oversized line / comment)
-	if ((feof(inputFile) || line[strlen(line) - 1] == '\n') && line[0] != ';')
+	if ((seof(inputFile) || line[strlen(line) - 1] == '\n') && line[0] != ';')
 	{
 		return true;				// Return true, line is good
 	}
 
-	// If it's an oversized line (trash), we need to fgets() our way through it one LINE_SIZE at a time.
+	// If it's an oversized line (trash), we need to sgets() our way through it one LINE_SIZE at a time.
 	while (line[strlen(line) - 1] != '\n')
 	{
-		fgets(line, LINE_SIZE, inputFile);
+		sgets(line, LINE_SIZE, inputFile);
 	}
 	
 	// Hopefully the next line won't be trash!
@@ -1475,5 +1476,17 @@ I just initialize them to whatever and that works fine.
 
 /*
 Problem log 2.0, Web-Assembly
-10/24/25 - f_open is windows specific, we'll need to do some restructuring to make our filesystem work on the web. For now, I'll do it the easy way.
+10/24/25:
+fopen is windows specific, we'll need to do some restructuring to make our filesystem work on the web.
+For now, I'll do it the easy way. (see: data.h)
+
+10/25/25:
+The easy way is harder than I thought it would be, but I do want to keep as much of the code in main.c the same,
+because (1) it already works and changing it would be a whole different challenge, and (2) we could imagine a much
+larger and more complex "enterprise" codebase, in which creating a compatible API really is by far the best solution
+to a re-compilation / porting project like this, even if that wouldn't be what you'd do if you started from scratch.
+
+While there were a few issues I dealt with, like sgets() returning lines with no newline, or how sgets() needs to seperately
+keep track of its position in a file and its position in the output string, what really stumped me for over an hour were
+syntax errors that I introduced into my test file when coppying it into the sfile struct.
 */
