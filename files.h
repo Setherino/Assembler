@@ -1,9 +1,6 @@
 #ifndef FILES_H
 #define FILES_H
-#define MAX_FILE_WIDTH 128
-#define MAX_FILE_LENGTH 200
-#define MAX_FILES 15
-#define LINE_SIZE 40	// For c-strings
+
 
 #include <stdarg.h>
 
@@ -79,36 +76,7 @@ sfile files[MAX_FILES] = {
         .length = 44,
         .position = 0,
         .line = 0
-    },
-    {
-.name = "CiancioTest11NL.asm",
-   .contents = {
-   "get\n",
-   "cmp ax 18\n",
-   "ja [13]\n",
-   "mov [14] ax\n",
-   "fun [17] 1 [14]\n",
-   "put\n",
-   "halt\n",
-   "\n",
-   "\n",
-   "\n",
-   "mov bx [16]\n",
-   "mov bx [bx+1]\n",
-   "mov cx [bx]\n",
-   "get\n",
-   "add cx -1\n",
-   "mov [39] cx\n",
-   "cmp cx 0\n",
-   "JBE [EN]\n",
-   "fun [FN] 1 [VR]\n",
-   "put\n",
-   "ret\n",
-   },
-   .length = 10,
-   .position = 0,
-   .line = 0
-}
+    }
 };
 
 // Opens a simulated file (analogous to fopen)
