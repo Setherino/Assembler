@@ -1,4 +1,4 @@
-This program simulates the function of an X-86 CPU. It comes complete with the assembler, simulator, and a "debugger" in the form of a readable memory dump. I've included all of the .asm files I used to test the program, and the problem log at the bottom in which I discuss my development/debugging process.
+This program simulates the function of an X-86 CPU. It comes complete with the assembler, simulator, and a "debugger" in the form of a readable memory dump. I've included all of the .asm files I used to test the program, and the problem log in which I discuss my development/debugging process.
 
 
 This project was created in the fall of 2023 for my Computer Architecture class. It was sort of an old-school class taught by an old school instructor, and it was great fun! I'm currently working on a project to convert this program to run on Web Assembly using Emscripten, so that I can put a live demo here for people to see. It's not done yet, and I'm still working on the web interface. In the meantime, main.c will still compile to run as a normal command line application, but it now uses a simulated file system, whose files can be seen/modified in files.h
