@@ -11,11 +11,34 @@
 //getInstructionName: Gets the name of an instruction from its numerican value.
 	// INPUT: location - the location of an instruction;
 	// OUTPUT: name - this is where it puts the name of the command
-void getInstructionName(Memory location, char name[], Memory displayType[]);
+//EMSCRIPTEN_KEEPALIVE
+void getInstructionName(Memory location, char name[]);
 
+// getInstructionValue: Returns the integer value of a given memory location.
+//EMSCRIPTEN_KEEPALIVE
+int getInstructionValue(Memory location);
 
 Memory displayType[MAX];			// To keep track of the type of each memory address for printMemoryDumpReadable()
 bool displayTypeFilled = false;
+
+int getInstructionValue(Memory location) {
+	if (location < MAX) {
+		return memory[location];
+	}
+}
+
+void initializeMemoryDumps()
+{
+	if (!displayTypeFilled)
+	{
+		for (int i = 0; i < MAX; i++)		// Initialize DisplayType (only once)
+		{
+			displayType[i] = 0;							// Set their display type to unknown.
+		}
+		displayTypeFilled = true;
+	}
+}
+
 
 //prints a more readable version of the memory dump
 void printMemoryDumpReadable()
@@ -26,17 +49,9 @@ void printMemoryDumpReadable()
 	char buffer[MAX][LINE_SIZE];		// Buffer so we can go through the instructions in order
 	char name[LINE_SIZE];				// Name of a byte
 
-	if (!displayTypeFilled)
-	{
-		for (int i = 0; i < MAX; i++)		// Initialize DisplayType (only once)
-		{
-			displayType[i] = 0;							// Set their display type to unknown.
-		}
-		displayTypeFilled = true;
-	}
 	for (int i = 0; i < MAX; i++)		// Go through all the bytes again
 	{
-		getInstructionName(i, name, displayType);	// Figure out what label to use for them
+		getInstructionName(i, name);	// Figure out what label to use for them
 		strcpy(buffer[i], name);					// Add that label to the buffer
 	}
 
@@ -71,9 +86,11 @@ void printMemoryDumpReadable()
 	printf("\n\n");
 }
 
+
 //Takes a memory location & a string. Fills string w/ readable name of the instruction/value at that location
-void getInstructionName(Memory location, char name[], Memory displayType[])
+void getInstructionName(Memory location, char name[])
 {
+	initializeMemoryDumps();
 	// Since we never display a register or BXADR, we can use the first 4 combinations for other labels.
 #define Unknown 0		// The default value.
 #define Instruction 1	// For instructions
@@ -210,6 +227,7 @@ prints memory by number
 MAX is the amount of elements in the memory array (Vicki used 100)
 COL is the number of columns that are to be displayed (Vicki used 7; was originally called COLUMNS)
 ---------------------------------------------------------------------------------*/
+
 void printMemoryDump(int dumpType)
 {
 	int numRows = MAX / COL + 1;	//number of rows that will print

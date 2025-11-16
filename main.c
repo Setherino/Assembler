@@ -17,20 +17,30 @@
 #include "simulator.c" // Relies on code from ^
 #include "assembler.c" // Relies on code from ^
 
-				//****************** Core Functions **********************
-
 	//optionsMenu: presents the user with an options menu to choose what program functionality they want to use
 		// INPUT: printMemoryAtEnd - whether or not to do a memory dump at the end of the program
 		// OUTPUT: printMemoryAtEnd - same thing as input, but might be changed by the user
+//EMSCRIPTEN_KEEPALIVE
 bool optionsMenu(bool printMemoryAtEnd);
-	
+
 	//loadPreferences: loads settings (filename, debug, dump type, and printMemoryAtEnd) from preferencesFile
 		// OUTPUT: printMemoryAtEnd
+//EMSCRIPTEN_KEEPALIVE
 bool loadPreferences();
 
 	// customSettings: enables the user to change their settings (filename, debug, dump type, and printMemoryAtEnd)
-		// OUTPUT: printMemoryAtEnd
+	// OUTPUT: printMemoryAtEnd
+//EMSCRIPTEN_KEEPALIVE
 bool customSettings();
+
+/*
+
+Take note of what happens in this file, and repeat the same order of operations in your HTML/JS version
+BUT DO NOT print debugs to the console. KEEP DEBUG INFORMATION SEPERATE.
+
+You may have the user interact with the 
+
+*/
 
 int main()
 {
@@ -46,25 +56,14 @@ int main()
 		
 		assembler();
 
-		if (debug)
-		{
-			debugUI();
-		}
-
 		printf("Running machine code...\n\n");
 
 		runMachineCode();
-
-		if (printMemoryAtEnd)
-		{
-			debugUI();
-		}
-
+		
 		printf("\n\n\n\tProgram complete!\n\n");
 	}
 	return 0;
 }
-
 	// Enables the user to change their settings (filename, debug, dump type, and printMemoryAtEnd)
 bool customSettings()
 {
@@ -155,47 +154,6 @@ bool loadPreferences()
 	return printMemoryAtEnd;
 }
 
-void removeLabelsFromFile(char fileName[LINE_SIZE])
-{
-	char fileBuffer[MAX][LINE_SIZE];
-	sfile* fin;
-	sfile* fout;
-	sopen(&fin, ASM_FILE_NAME, "r");
-	if (fin == NULL)
-	{
-		printf("Error, file didn't open\n\nExiting program...\n\n");
-		system("pause");
-		exit(1);
-	}
-
-	int fileSize = labelConvert(fin, fileBuffer);
-	sclose(fin);
-
-	sopen(&fout, fileName, "w");
-	if (fin == NULL)
-	{
-		printf("Error, file didn't open\n\nExiting program...\n\n");
-		system("pause");
-		exit(1);
-	}
-
-	for (int i = 0; i < fileSize; i++)
-	{
-		char stringBuffer[LINE_SIZE];
-		strcpy(stringBuffer, fileBuffer[i]);
-		if (stringBuffer[0] != '\n')
-		{
-			sfprintf(fout, "%s\n", stringBuffer);
-		}
-		else
-		{
-			sfprintf(fout, "%s", stringBuffer);
-		}
-	}
-	sclose(fout);
-
-	printf("\n\n\tLabels removed & new file saved.\n\n");
-}
 
 bool optionsMenu(bool printMemoryAtEnd)
 {
@@ -261,5 +219,3 @@ bool optionsMenu(bool printMemoryAtEnd)
 	}
 	return optionsMenu(printMemoryAtEnd);
 }
-
-

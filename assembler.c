@@ -2,6 +2,7 @@
 #define ASSEMBLER_C
 
 // assembler: Converts the entire ASM file and stores it in memory
+//EMSCRIPTEN_KEEPALIVE
 void assembler();
 
 //getFromLine: Seperates a word from a line of text.
@@ -31,11 +32,6 @@ void paramDecode(char* param2, Memory tempCommand, bool inlineParams);
 	// OUTPUT: command[] - the instruction; param1[], param2[] -  the two parameters;
 void splitCommand(char line[], char command[], char param1[], char param2[]);
 
-//findString: searches an array of strings for a particular string
-	// INPUT: searchFor[] - the string we're searching for
-	// OUTPUT: int - the location of the string found in the array.
-int findString(char searchFor[], const char stringArray[][LINE_SIZE], int limit);
-
 // Compiles the FUN command
 	//INPUT: a full line of asm
 void fillFun(char line[]);
@@ -43,9 +39,10 @@ void fillFun(char line[]);
 //getLineWithoutTrash: gets one line of ASM, and removes the trash if it needs to.
 bool getLineWithoutTrash(sfile* inputFile, char line[]);
 
+void removeLabelsFromFile(char fileName[LINE_SIZE]);
+
 //										Assembler: 
 //		Changes the assembly code to machine code and places the commands into the memory.
-
 void assembler()
 {
 	address = 0;
@@ -394,6 +391,48 @@ bool getLineWithoutTrash(sfile* inputFile, char line[LINE_SIZE])
 
 	// Hopefully the next line won't be trash!
 	return getLineWithoutTrash(inputFile, line);
+}
+
+void removeLabelsFromFile(char fileName[LINE_SIZE])
+{
+	char fileBuffer[MAX][LINE_SIZE];
+	sfile* fin;
+	sfile* fout;
+	sopen(&fin, ASM_FILE_NAME, "r");
+	if (fin == NULL)
+	{
+		printf("Error, file didn't open\n\nExiting program...\n\n");
+		system("pause");
+		exit(1);
+	}
+
+	int fileSize = labelConvert(fin, fileBuffer);
+	sclose(fin);
+
+	sopen(&fout, fileName, "w");
+	if (fin == NULL)
+	{
+		printf("Error, file didn't open\n\nExiting program...\n\n");
+		system("pause");
+		exit(1);
+	}
+
+	for (int i = 0; i < fileSize; i++)
+	{
+		char stringBuffer[LINE_SIZE];
+		strcpy(stringBuffer, fileBuffer[i]);
+		if (stringBuffer[0] != '\n')
+		{
+			sfprintf(fout, "%s\n", stringBuffer);
+		}
+		else
+		{
+			sfprintf(fout, "%s", stringBuffer);
+		}
+	}
+	sclose(fout);
+
+	printf("\n\n\tLabels removed & new file saved.\n\n");
 }
 
 #endif

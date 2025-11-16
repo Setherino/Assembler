@@ -100,4 +100,4 @@ to a re-compilation / porting project like this, even if that wouldn't be what y
 
 While there were a few issues I dealt with, like sgets() returning lines with no newline, or how sgets() needs to seperately
 keep track of its position in a file and its position in the output string, what really stumped me for over an hour were
-syntax errors that I introduced into my test file when coppying it into the sfile struct.
+syntax errors that I introduced into my test file (CiancioTest11.asm) when coppying it into the sfile struct.

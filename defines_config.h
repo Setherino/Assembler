@@ -1,9 +1,11 @@
+#include <stdbool.h>
+
 #ifndef DEFINES_CONFIG_H
 #define DEFINES_CONFIG_H
 
 #define MAX_FILE_WIDTH 128
 #define MAX_FILE_LENGTH 200
-#define MAX_FILES 15
+#define MAX_FILES 20
 #define LINE_SIZE 40	// For c-strings
 #define MAX 150			// Size of simulator's memory
 #define COL 7			// number of columns for output
@@ -80,7 +82,7 @@ int latestOutput = -1;			// Stores the most recent output (for easier debuging)
 
 // This is the lookup table for all the instructions, matched with the instructionTable.
 // The "Control word" is a 6-bit binary number that tells the compiler how to compile each command. Allows for adding commands without modifying compiler code.
-// Two parameter commands go first, then single param, then jmps, then functions, then the non-instruction ones.
+// Two parameter commands go first, then single param, then jmps, then functions, then the non-instruction ones. See assembler.c for usage.
 const Memory controlWordKey[numInstructions][2] = {
 	{MOVMEM, 42},		// 101010 - Inline params,	initCommandBW,	paramDecodeBW
 	{MOVREG, 52},		// 110100 - Inline params,	doInitCommand,	doParamDecode 
@@ -119,4 +121,11 @@ const Memory controlWordKey[numInstructions][2] = {
 const char errorMessages[9][LINE_SIZE] = { "No errors reported!","FATAL; INSTRUCTION = ZERO", "COMPILE UNKNOWN",
 		 "FATAL; CANNOT STORE DATA IN CONSTANT","FATAL; UNKNOWN INSTRUCTION","FATAL; COMPILE OVERRUN",
 		 "COMPILER: UNKNOWN PARAMETER","UNKNOWN VARIABLE","TOO MANY 3-BIT PARAMETERS" };
+
+//findString: searches an array of strings for a particular string
+	// INPUT: searchFor[] - the string we're searching for
+	// OUTPUT: int - the location of the string found in the array.
+int findString(char searchFor[], const char stringArray[][LINE_SIZE], int limit);
+
+
 #endif

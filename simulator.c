@@ -1,12 +1,29 @@
 #ifndef SIMULATOR_C
 #define SIMULATOR_C
 
+//EMSCRIPTEN_KEEPALIVE
+int getAddress() {
+	return address;
+}
+
+//EMSCRIPTEN_KEEPALIVE
+int getStackPointer() {
+	return stackPointer;
+}
+
+//EMSCRIPTEN_KEEPALIVE
+int getLatestOutput() {
+	return latestOutput;
+}
+
 //runMachineCode: Executes the machine code in memory.
+//EMSCRIPTEN_KEEPALIVE
 void runMachineCode();
 
 //getValue: takes a register (int) and returns that register's value
 	// INPUT: registerID - the integer ID of a register
 	// OUTPUT: return - the value stored in the selected register
+//EMSCRIPTEN_KEEPALIVE
 int getValue(int registerID);
 
 //putValue: takes a register ID and a value and puts that value into the corresponding register.
@@ -55,7 +72,6 @@ Memory getType(char* param);
 
 //								runMachineCode()
 //				Executes the machine code, the virtual machine
-
 void runMachineCode()
 {
 	// Bitmasks for simple instructions with parameters. For "special instructions" (see below) the whole byte is used for the opcode.
@@ -142,7 +158,7 @@ void runMachineCode()
 			internalError = RUNTIME_UNKNOWN;							//UKN ERR
 			return;
 		}
-
+		
 		if (debug)		//Debugging stuff
 		{
 			debugUI();
